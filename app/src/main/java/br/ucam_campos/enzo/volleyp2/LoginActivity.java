@@ -1,13 +1,16 @@
 package br.ucam_campos.enzo.volleyp2;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -42,19 +45,23 @@ public class LoginActivity extends AppCompatActivity {
 
         //Listener para evento de clique
         btnLogin.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
+            public void onClick(final View v) {
                 //Toast.makeText(getApplicationContext(), usernameTxt.getText().toString(), Toast.LENGTH_LONG).show();
                 if (usernameTxt.getText().toString().equals("")) {
                     Toast.makeText(getApplicationContext(), "Nome de usuário é obrigatório", Toast.LENGTH_LONG).show();
                 } else if (passwordTxt.getText().toString().equals("")) {
                     Toast.makeText(getApplicationContext(), "Senha é obrigatória", Toast.LENGTH_LONG).show();
                 } else {
+                    if (v != null) {
+                        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                    }
                     JsonObjectRequest jsonReq = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
 
                         @Override
                         public void onResponse(JSONObject response) {
                             String mensagem = "";
-                            int status = 0;
+                            int status = -1;
 
                             try {
                                 mensagem = response.getString("mensagem");
@@ -62,7 +69,19 @@ public class LoginActivity extends AppCompatActivity {
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
-                            Toast.makeText(getApplicationContext(), mensagem, Toast.LENGTH_LONG).show();
+
+                            //Caso login retorne status
+                            if(status != -1){
+
+                                if(status == 1){
+                                    Toast.makeText(getApplicationContext(), mensagem, Toast.LENGTH_LONG).show();
+                                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                                }
+                                else{
+                                    Snackbar.make(v, "Status: "+status+", "+"\n"+mensagem, Snackbar.LENGTH_LONG).show();
+                                }
+                            }
+
                         }
                     }, new Response.ErrorListener() {
                         @Override

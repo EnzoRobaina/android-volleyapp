@@ -1,6 +1,7 @@
 package br.ucam_campos.enzo.volleyp2;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -20,11 +21,13 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LoginActivity extends AppCompatActivity implements VolleyResponseListener {
+public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,6 +38,7 @@ public class LoginActivity extends AppCompatActivity implements VolleyResponseLi
         final EditText passwordTxt = (EditText) findViewById(R.id.password);
         final Button btnLogin = findViewById(R.id.btnLogin);
         final RequestQueue fila = Volley.newRequestQueue(this);
+        final String url = "https://djangorest-androidapi.herokuapp.com/";
 
         //Listener para evento de clique
         btnLogin.setOnClickListener(new View.OnClickListener() {
@@ -45,51 +49,43 @@ public class LoginActivity extends AppCompatActivity implements VolleyResponseLi
                 } else if (passwordTxt.getText().toString().equals("")) {
                     Toast.makeText(getApplicationContext(), "Senha é obrigatória", Toast.LENGTH_LONG).show();
                 } else {
-                    indexReq(usernameTxt.getText().toString().trim(), passwordTxt.getText().toString());
+                    JsonObjectRequest jsonReq = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            String mensagem = "";
+                            int status = 0;
+
+                            try {
+                                mensagem = response.getString("mensagem");
+                                status = response.getInt("status");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            Toast.makeText(getApplicationContext(), mensagem, Toast.LENGTH_LONG).show();
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            //Exibe o erro na forma de toast
+                            Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_LONG).show();
+                        }
+                    }){
+                        @Override
+                        public Map<String, String> getHeaders() throws AuthFailureError {
+                            Map<String, String> headers = new HashMap<>();
+                            String credentials = usernameTxt.getText().toString().trim()+":"+passwordTxt.getText().toString();
+                            String auth = "Basic "
+                                    + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
+                            headers.put("Content-Type", "application/json");
+                            headers.put("Authorization", auth);
+                            return headers;
+                        }
+                    };
+                    fila.add(jsonReq);
                 }
             }
         });
-
-    }
-
-    private void indexReq(final String user, final String passwd) {
-        String url = "https://djangorest-androidapi.herokuapp.com/";
-
-        JsonObjectRequest jsonReq = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-
-            @Override
-            public void onResponse(JSONObject response) {
-                Log.i("OnResponse", "OnResponse"+response.toString());
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e("OnError", "OnError"+error.toString());
-            }
-        }){
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> headers = new HashMap<>();
-                String credentials = user+":"+passwd;
-                String auth = "Basic "
-                        + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
-                headers.put("Content-Type", "application/json");
-                headers.put("Authorization", auth);
-                return headers;
-            }
-        };
-        RequestQueue fila = Volley.newRequestQueue(this);
-        fila.add(jsonReq);
-    }
-
-
-    @Override
-    public void onFailure(String message) {
-
-    }
-
-    @Override
-    public void onSuccess(String response) {
 
     }
 }
@@ -99,24 +95,3 @@ public class LoginActivity extends AppCompatActivity implements VolleyResponseLi
 
 
 
-//JSONObject(String json)
-
-/*
-
-String url = "https://djangorest-androidapi.herokuapp.com/";
-                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            Toast.makeText(getApplicationContext(), response.toString(), Toast.LENGTH_LONG).show();
-                        }
-                    }, new Response.ErrorListener() {
-
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_LONG).show();
-                        }
-                    });
-                    fila.add(jsonObjectRequest);
-
- */

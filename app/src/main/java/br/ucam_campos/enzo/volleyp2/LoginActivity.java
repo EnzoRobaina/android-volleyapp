@@ -41,10 +41,11 @@ public class LoginActivity extends AppCompatActivity {
         final EditText usernameTxt = (EditText) findViewById(R.id.username);
         final EditText passwordTxt = (EditText) findViewById(R.id.password);
         final Button btnLogin = findViewById(R.id.btnLogin);
+        final Button btnRegistrar = findViewById(R.id.btnRegistrar);
         final RequestQueue fila = Volley.newRequestQueue(this);
         final String url = "https://djangorest-androidapi.herokuapp.com/";
 
-        //Listener para evento de clique
+        //Listener para evento de clique do botão login
         btnLogin.setOnClickListener(new View.OnClickListener() {
             public void onClick(final View v) {
                 //Toast.makeText(getApplicationContext(), usernameTxt.getText().toString(), Toast.LENGTH_LONG).show();
@@ -63,7 +64,6 @@ public class LoginActivity extends AppCompatActivity {
                         public void onResponse(JSONObject response) {
                             String mensagem = "";
                             JSONObject usu;
-                            JSONArray usuArr;
                             int id = 0;
                             int status = -1;
 
@@ -131,6 +131,12 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        btnRegistrar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), RegisterActivity.class));
+            }
+        });
     }
 }
 

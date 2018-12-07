@@ -25,6 +25,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.HashMap;
@@ -61,6 +62,9 @@ public class LoginActivity extends AppCompatActivity {
                         @Override
                         public void onResponse(JSONObject response) {
                             String mensagem = "";
+                            JSONObject usu;
+                            JSONArray usuArr;
+                            int id = 0;
                             int status = -1;
 
                             try {
@@ -74,8 +78,29 @@ public class LoginActivity extends AppCompatActivity {
                             if(status != -1){
 
                                 if(status == 1){
+                                    Usuario usuario = new Usuario();
+                                    try{
+                                        usu = response.getJSONObject("usuario");
+
+                                        usuario.setId(usu.getInt("pk"));
+                                        usuario.setUsername(usu.getString("username"));
+                                        usuario.setSu(usu.getBoolean("is_superuser"));
+                                        usuario.setFirstName(usu.getString("first_name"));
+                                        usuario.setLastName(usu.getString("last_name"));
+                                        usuario.setEmail(usu.getString("email"));
+                                        usuario.setNascimento(usu.getString("nascimento"));
+                                        usuario.setTelefone(usu.getString("telefone"));
+                                        usuario.setEndereco(usu.getString("endereco"));
+                                        usuario.setStatus(usu.getInt("status"));
+
+                                    } catch (JSONException e) {
+                                        Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+                                    }
+
+                                    Intent i = new Intent(getApplicationContext(), MainActivity.class);
                                     Toast.makeText(getApplicationContext(), mensagem, Toast.LENGTH_LONG).show();
-                                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                                    i.putExtra("usuario", usuario);
+                                    startActivity(i);
                                 }
                                 else{
                                     Snackbar.make(v, "Status: "+status+", "+"\n"+mensagem, Snackbar.LENGTH_LONG).show();
